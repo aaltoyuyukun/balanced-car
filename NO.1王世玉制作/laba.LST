@@ -1,0 +1,27 @@
+C51 COMPILER V9.01   LABA                                                                  11/29/2013 10:05:00 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE LABA
+OBJECT MODULE PLACED IN laba.OBJ
+COMPILER INVOKED BY: D:\Èí¼þ\keil\C51\BIN\C51.EXE laba.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #include"laba.h"
+   3          
+   4          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   ----    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

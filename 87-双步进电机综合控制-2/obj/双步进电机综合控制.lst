@@ -1,0 +1,632 @@
+C51 COMPILER V7.06   薩步进_缁_综__控制                                                    01/16/2016 11:51:00 PAGE 1   
+
+
+C51 COMPILER V7.06, COMPILATION OF MODULE 薩步进_缁_综__控制
+OBJECT MODULE PLACED IN .\obj\双步进电机综合控制.obj
+COMPILER INVOKED BY: D:\keil C51完全破解版\install\C51\BIN\C51.EXE 双步进电机综合控制.c BROWSE DEBUG OBJECTEXTEND PRINT(
+                    -.\obj\双步进电机综合控制.lst) OBJECT(.\obj\双步进电机综合控制.obj)
+
+stmt level    source
+
+   1          //****************************************
+   2          // Update to MPU6050 by shinetop
+   3          // MCU: STC89C52
+   4          // 2012.3.1
+   5          // 功能: 显示加速度计和陀螺仪的10位原始数据
+   6          //****************************************
+   7          // GY-52 MPU3050 IIC测试程序
+   8          // 使用单片机STC89C51 
+   9          // 晶振：11.0592M
+  10          // 显示：LCD1602
+  11          // 编译环境 Keil uVision2
+  12          // 参考宏晶网站24c04通信程序
+  13          // 时间：2011年9月1日
+  14          // QQ：531389319
+  15          //****************************************
+  16          #include <REG52.H>      
+  17          #include <math.h>    //Keil library  
+  18          #include <stdio.h>   //Keil library     
+  19          #include <INTRINS.H>
+  20          typedef unsigned char  uchar;
+  21          typedef unsigned short ushort;
+  22          typedef unsigned int   uint;
+  23          //****************************************
+  24          // 定义51单片机端口
+  25          //****************************************
+  26          #define DataPort P0             //LCD1602数据端口
+  27          sbit    SCL=P1^0;                       //IIC时钟引脚定义
+  28          sbit    SDA=P1^1;                       //IIC数据引脚定义
+  29          sbit    LCM_RS=P2^4;            //LCD1602命令端口               
+  30          sbit    LCM_RW=P2^5;            //LCD1602命令端口               
+  31          sbit    LCM_EN=P2^6;            //LCD1602命令端口 
+  32          sbit maichong=P1^2; //定义大功率步进电机连接端口
+  33          sbit dir=P1^3;
+  34          sbit A1=P1^4; //定义步进电机连接端口
+  35          sbit B1=P1^5;
+  36          sbit C1=P1^6;
+  37          sbit D1=P1^7;
+  38          //****************************************
+  39          // 定义MPU6050内部地址
+  40          //****************************************
+  41          #define SMPLRT_DIV              0x19    //陀螺仪采样率，典型值：0x07(125Hz)
+  42          #define CONFIG                  0x1A    //低通滤波频率，典型值：0x06(5Hz)
+  43          #define GYRO_CONFIG             0x1B    //陀螺仪自检及测量范围，典型值：0x18(不自检，2000deg/s)
+  44          #define ACCEL_CONFIG    0x1C    //加速计自检、测量范围及高通滤波频率，典型值：0x01(不自检，2G，5Hz)
+  45          #define ACCEL_XOUT_H    0x3B
+  46          #define ACCEL_XOUT_L    0x3C
+  47          #define ACCEL_YOUT_H    0x3D
+  48          #define ACCEL_YOUT_L    0x3E
+  49          #define ACCEL_ZOUT_H    0x3F
+  50          #define ACCEL_ZOUT_L    0x40
+  51          #define TEMP_OUT_H              0x41
+  52          #define TEMP_OUT_L              0x42
+  53          #define GYRO_XOUT_H             0x43
+  54          #define GYRO_XOUT_L             0x44    
+C51 COMPILER V7.06   薩步进_缁_综__控制                                                    01/16/2016 11:51:00 PAGE 2   
+
+  55          #define GYRO_YOUT_H             0x45
+  56          #define GYRO_YOUT_L             0x46
+  57          #define GYRO_ZOUT_H             0x47
+  58          #define GYRO_ZOUT_L             0x48
+  59          #define PWR_MGMT_1              0x6B    //电源管理，典型值：0x00(正常启用)
+  60          #define WHO_AM_I                        0x75    //IIC地址寄存器(默认数值0x68，只读)
+  61          #define SlaveAddress    0xD0    //IIC写入时的地址字节数据，+1为读取
+  62          
+  63          
+  64          #define Coil_A1 {A1=1;B1=0;C1=0;D1=0;}//A相通电，其他相断电
+  65          #define Coil_B1 {A1=0;B1=1;C1=0;D1=0;}//B相通电，其他相断电
+  66          #define Coil_C1 {A1=0;B1=0;C1=1;D1=0;}//C相通电，其他相断电
+  67          #define Coil_D1 {A1=0;B1=0;C1=0;D1=1;}//D相通电，其他相断电
+  68          #define Coil_AB1 {A1=1;B1=1;C1=0;D1=0;}//AB相通电，其他相断电
+  69          #define Coil_BC1 {A1=0;B1=1;C1=1;D1=0;}//BC相通电，其他相断电
+  70          #define Coil_CD1 {A1=0;B1=0;C1=1;D1=1;}//CD相通电，其他相断电
+  71          #define Coil_DA1 {A1=1;B1=0;C1=0;D1=1;}//D相通电，其他相断电
+  72          #define Coil_OFF {A1=0;B1=0;C1=0;D1=0;}//全部断电
+  73          //****************************************
+  74          //定义类型及变量
+  75          //****************************************
+  76          uchar dis[4];                                                   //显示数字(-511至512)的字符数组
+  77          unsigned char Speed;
+  78          int     dis_data;                                               //变量
+  79          double Xjiaodu;
+  80           unsigned char num;
+  81          unsigned int time2=0,times1=1,times2=1;
+  82          static unsigned int tun=3;
+  83            
+  84          //int   Temperature,Temp_h,Temp_l;      //温度及高低位数据
+  85          //****************************************
+  86          //函数声明
+  87          //****************************************
+  88          void  delay(unsigned int k);
+  89          void Init_Timer0(void);                                                                         //延时
+  90          void Init_Timer1(void);
+  91          //LCD相关函数
+  92          void  InitLcd();                                                                                                                //初始化lcd1602
+  93          void  lcd_printf(uchar *s,int temp_data);
+  94          void  WriteDataLCM(uchar dataW);                                                                        //LCD数据
+  95          void  WriteCommandLCM(uchar CMD,uchar Attribc);                         //LCD指令
+  96          void  DisplayOneChar(uchar X,uchar Y,uchar DData);                      //显示一个字符
+  97          void  DisplayListChar(uchar X,uchar Y,uchar *DData,L);  //显示字符串
+  98          //MPU6050操作函数
+  99          void  InitMPU6050();                                                                                                    //初始化MPU6050
+ 100          void  Delay5us();
+ 101          void  I2C_Start();
+ 102          void  I2C_Stop();
+ 103          void  I2C_SendACK(bit ack);
+ 104          bit   I2C_RecvACK();
+ 105          void  I2C_SendByte(uchar dat);
+ 106          uchar I2C_RecvByte();
+ 107          void  I2C_ReadPage();
+ 108          void  I2C_WritePage();
+ 109          void  display_ACCEL_x();
+ 110          void  display_ACCEL_y();
+ 111          void  display_ACCEL_z();
+ 112          uchar Single_ReadI2C(uchar REG_Address);                                                //读取I2C数据
+ 113          void  Single_WriteI2C(uchar REG_Address,uchar REG_data);        //向I2C写入数据
+ 114          //****************************************
+ 115          //整数转字符串
+ 116          //****************************************
+C51 COMPILER V7.06   薩步进_缁_综__控制                                                    01/16/2016 11:51:00 PAGE 3   
+
+ 117          void lcd_printf(uchar *s,int temp_data)
+ 118          {
+ 119   1              if(temp_data<0)
+ 120   1              {
+ 121   2                      temp_data=-temp_data;
+ 122   2                      *s='-';
+ 123   2              }
+ 124   1              else *s=' ';
+ 125   1              *++s =temp_data/100+0x30;
+ 126   1              temp_data=temp_data%100;     //取余运算
+ 127   1              *++s =temp_data/10+0x30;
+ 128   1              temp_data=temp_data%10;      //取余运算
+ 129   1              *++s =temp_data+0x30;   
+ 130   1      }
+ 131          //****************************************
+ 132          //延时
+ 133          //****************************************
+ 134          void delay(unsigned int k)      
+ 135          {                                               
+ 136   1              unsigned int i,j;                               
+ 137   1              for(i=0;i<k;i++)
+ 138   1              {                       
+ 139   2                      for(j=0;j<121;j++);
+ 140   2              }                                               
+ 141   1      }
+ 142          /*------------------------------------------------
+ 143           uS延时函数，含有输入参数 unsigned char t，无返回值
+ 144           unsigned char 是定义无符号字符变量，其值的范围是
+ 145           0~255 这里使用晶振12M，精确延时请使用汇编,大致延时
+ 146           长度如下 T=tx2+5 uS 
+ 147          ------------------------------------------------*/
+ 148          void DelayUs2x(unsigned char t)
+ 149          {   
+ 150   1       while(--t);
+ 151   1      }
+ 152          /*------------------------------------------------
+ 153           mS延时函数，含有输入参数 unsigned char t，无返回值
+ 154           unsigned char 是定义无符号字符变量，其值的范围是
+ 155           0~255 这里使用晶振12M，精确延时请使用汇编
+ 156          ------------------------------------------------*/
+ 157          void DelayMs(unsigned char t)
+ 158          {
+ 159   1           
+ 160   1       while(t--)
+ 161   1       {
+ 162   2           //大致延时1mS
+ 163   2           DelayUs2x(245);
+ 164   2               DelayUs2x(245);
+ 165   2       }
+ 166   1      }
+ 167          /*------------------------------------------------
+ 168                              定时器初始化子程序
+ 169          ------------------------------------------------*/
+ 170          void Init_Timer0(void)
+ 171          {
+ 172   1       TMOD |= 0x01;    //使用模式1，16位定时器，使用"|"符号可以在使用多个定时器时不受影响                 
+ 173   1       TH0=0x0000;          //0x00;给定初值0x00;
+ 174   1       TL0=0x0000;
+ 175   1      // EA=1;            //总中断打开
+ 176   1       ET0=1;           //定时器中断打开
+ 177   1       TR0=1;           //定时器开关打开
+ 178   1       PT0=1;           //优先级打开
+C51 COMPILER V7.06   薩步进_缁_综__控制                                                    01/16/2016 11:51:00 PAGE 4   
+
+ 179   1      }
+ 180          /*------------------------------------------------
+ 181                              定时器初始化子程序
+ 182          ------------------------------------------------*/
+ 183          void Init_Timer1(void)
+ 184          {
+ 185   1       TMOD |= 0x10;    //使用模式1，16位定时器，使用"|"符号可以在使用多个定时器时不受影响 
+ 186   1       TH1=0x00;            //给定初值，这里使用定时器最大值从0开始计数一直到65535溢出
+ 187   1       TL1=0x00;
+ 188   1      // EA=1;            //总中断打开
+ 189   1       ET1=1;           //定时器中断打开
+ 190   1       TR1=1;           //定时器开关打开
+ 191   1      }
+ 192          /*------------------------------------------------
+ 193          定时器初始化子程序
+ 194          ------------------------------------------------*/
+ 195          void TIM2Inital(void)
+ 196          {
+ 197   1        RCAP2H = (65536-2000)/256;//晶振12M 60ms 16bit 自动重载
+ 198   1        RCAP2L = (65536-2000)%256;
+ 199   1        ET2=1;                     //打开定时器中断
+ 200   1      //  EA=1;                      //打开总中断
+ 201   1        TR2=1;                     //打开定时器开关
+ 202   1      }
+ 203          //****************************************
+ 204          //LCD1602初始化
+ 205          //****************************************
+ 206          void InitLcd()                          
+ 207          {                       
+ 208   1              WriteCommandLCM(0x38,1);        
+ 209   1              WriteCommandLCM(0x08,1);        
+ 210   1              WriteCommandLCM(0x01,1);        
+ 211   1              WriteCommandLCM(0x06,1);        
+ 212   1              WriteCommandLCM(0x0c,1);
+ 213   1              DisplayOneChar(0,0,'A');
+ 214   1              DisplayOneChar(0,1,'G');
+ 215   1      }                       
+ 216          //****************************************
+ 217          //LCD1602写允许
+ 218          //****************************************
+ 219          void WaitForEnable(void)        
+ 220          {                                       
+ 221   1              DataPort=0xff;          
+ 222   1              LCM_RS=0;LCM_RW=1;_nop_();
+ 223   1              LCM_EN=1;_nop_();_nop_();
+ 224   1              while(DataPort&0x80);   
+ 225   1              LCM_EN=0;                               
+ 226   1      }                                       
+ 227          //****************************************
+ 228          //LCD1602写入命令
+ 229          //****************************************
+ 230          void WriteCommandLCM(uchar CMD,uchar Attribc)
+ 231          {                                       
+ 232   1              if(Attribc)WaitForEnable();     
+ 233   1              LCM_RS=0;LCM_RW=0;_nop_();
+ 234   1              DataPort=CMD;_nop_();   
+ 235   1              LCM_EN=1;_nop_();_nop_();LCM_EN=0;
+ 236   1      }                                       
+ 237          //****************************************
+ 238          //LCD1602写入数据
+ 239          //****************************************
+ 240          void WriteDataLCM(uchar dataW)
+C51 COMPILER V7.06   薩步进_缁_综__控制                                                    01/16/2016 11:51:00 PAGE 5   
+
+ 241          {                                       
+ 242   1              WaitForEnable();                
+ 243   1              LCM_RS=1;LCM_RW=0;_nop_();
+ 244   1              DataPort=dataW;_nop_(); 
+ 245   1              LCM_EN=1;_nop_();_nop_();LCM_EN=0;
+ 246   1      }               
+ 247          //****************************************
+ 248          //LCD1602写入一个字符
+ 249          //****************************************
+ 250          void DisplayOneChar(uchar X,uchar Y,uchar DData)
+ 251          {                                               
+ 252   1              Y&=1;                                           
+ 253   1              X&=15;                                          
+ 254   1              if(Y)X|=0x40;                                   
+ 255   1              X|=0x80;                        
+ 256   1              WriteCommandLCM(X,0);           
+ 257   1              WriteDataLCM(DData);            
+ 258   1      }                                               
+ 259          //****************************************
+ 260          //LCD1602显示字符串
+ 261          //****************************************
+ 262          void DisplayListChar(uchar X,uchar Y,uchar *DData,L)
+ 263          {
+ 264   1              uchar ListLength=0; 
+ 265   1              Y&=0x1;                
+ 266   1              X&=0xF;                
+ 267   1              while(L--)             
+ 268   1              {                       
+ 269   2                      DisplayOneChar(X,Y,DData[ListLength]);
+ 270   2                      ListLength++;  
+ 271   2                      X++;                        
+ 272   2              }    
+ 273   1      }
+ 274          //**************************************
+ 275          //延时5微秒(STC90C52RC@12M)
+ 276          //不同的工作环境,需要调整此函数
+ 277          //当改用1T的MCU时,请调整此延时函数
+ 278          //**************************************
+ 279          void Delay5us()
+ 280          {
+ 281   1              _nop_();_nop_();_nop_();_nop_();
+ 282   1              _nop_();_nop_();_nop_();_nop_();
+ 283   1              _nop_();_nop_();_nop_();_nop_();
+ 284   1              _nop_();_nop_();_nop_();_nop_();
+ 285   1              _nop_();_nop_();_nop_();_nop_();
+ 286   1              _nop_();_nop_();_nop_();_nop_();
+ 287   1      }
+ 288          //**************************************
+ 289          //I2C起始信号
+ 290          //**************************************
+ 291          void I2C_Start()
+ 292          {
+ 293   1          SDA = 1;                    //拉高数据线
+ 294   1          SCL = 1;                    //拉高时钟线
+ 295   1          Delay5us();                 //延时
+ 296   1          SDA = 0;                    //产生下降沿
+ 297   1          Delay5us();                 //延时
+ 298   1          SCL = 0;                    //拉低时钟线
+ 299   1      }
+ 300          //**************************************
+ 301          //I2C停止信号
+ 302          //**************************************
+C51 COMPILER V7.06   薩步进_缁_综__控制                                                    01/16/2016 11:51:00 PAGE 6   
+
+ 303          void I2C_Stop()
+ 304          {
+ 305   1          SDA = 0;                    //拉低数据线
+ 306   1          SCL = 1;                    //拉高时钟线
+ 307   1          Delay5us();                 //延时
+ 308   1          SDA = 1;                    //产生上升沿
+ 309   1          Delay5us();                 //延时
+ 310   1      }
+ 311          //**************************************
+ 312          //I2C发送应答信号
+ 313          //入口参数:ack (0:ACK 1:NAK)
+ 314          //**************************************
+ 315          void I2C_SendACK(bit ack)
+ 316          {
+ 317   1          SDA = ack;                  //写应答信号
+ 318   1          SCL = 1;                    //拉高时钟线
+ 319   1          Delay5us();                 //延时
+ 320   1          SCL = 0;                    //拉低时钟线
+ 321   1          Delay5us();                 //延时
+ 322   1      }
+ 323          //**************************************
+ 324          //I2C接收应答信号
+ 325          //**************************************
+ 326          bit I2C_RecvACK()
+ 327          {
+ 328   1          SCL = 1;                    //拉高时钟线
+ 329   1          Delay5us();                 //延时
+ 330   1          CY = SDA;                   //读应答信号
+ 331   1          SCL = 0;                    //拉低时钟线
+ 332   1          Delay5us();                 //延时
+ 333   1          return CY;
+ 334   1      }
+ 335          //**************************************
+ 336          //向I2C总线发送一个字节数据
+ 337          //**************************************
+ 338          void I2C_SendByte(uchar dat)
+ 339          {
+ 340   1          uchar i;
+ 341   1          for (i=0; i<8; i++)         //8位计数器
+ 342   1          {
+ 343   2              dat <<= 1;              //移出数据的最高位
+ 344   2              SDA = CY;               //送数据口
+ 345   2              SCL = 1;                //拉高时钟线
+ 346   2              Delay5us();             //延时
+ 347   2              SCL = 0;                //拉低时钟线
+ 348   2              Delay5us();             //延时
+ 349   2          }
+ 350   1          I2C_RecvACK();
+ 351   1      }
+ 352          //**************************************
+ 353          //从I2C总线接收一个字节数据
+ 354          //**************************************
+ 355          uchar I2C_RecvByte()
+ 356          {
+ 357   1          uchar i;
+ 358   1          uchar dat = 0;
+ 359   1          SDA = 1;                    //使能内部上拉,准备读取数据,
+ 360   1          for (i=0; i<8; i++)         //8位计数器
+ 361   1          {
+ 362   2              dat <<= 1;
+ 363   2              SCL = 1;                //拉高时钟线
+ 364   2              Delay5us();             //延时
+C51 COMPILER V7.06   薩步进_缁_综__控制                                                    01/16/2016 11:51:00 PAGE 7   
+
+ 365   2              dat |= SDA;             //读数据               
+ 366   2              SCL = 0;                //拉低时钟线
+ 367   2              Delay5us();             //延时
+ 368   2          }
+ 369   1          return dat;
+ 370   1      }
+ 371          //**************************************
+ 372          //向I2C设备写入一个字节数据
+ 373          //**************************************
+ 374          void Single_WriteI2C(uchar REG_Address,uchar REG_data)
+ 375          {
+ 376   1          I2C_Start();                  //起始信号
+ 377   1          I2C_SendByte(SlaveAddress);   //发送设备地址+写信号
+ 378   1          I2C_SendByte(REG_Address);    //内部寄存器地址，
+ 379   1          I2C_SendByte(REG_data);       //内部寄存器数据，
+ 380   1          I2C_Stop();                   //发送停止信号
+ 381   1      }
+ 382          //**************************************
+ 383          //从I2C设备读取一个字节数据
+ 384          //**************************************
+ 385          uchar Single_ReadI2C(uchar REG_Address)
+ 386          {
+ 387   1              uchar REG_data;
+ 388   1              I2C_Start();                   //起始信号
+ 389   1              I2C_SendByte(SlaveAddress);    //发送设备地址+写信号
+ 390   1              I2C_SendByte(REG_Address);     //发送存储单元地址，从0开始      
+ 391   1              I2C_Start();                   //起始信号
+ 392   1              I2C_SendByte(SlaveAddress+1);  //发送设备地址+读信号
+ 393   1              REG_data=I2C_RecvByte();       //读出寄存器数据
+ 394   1              I2C_SendACK(1);                //接收应答信号
+ 395   1              I2C_Stop();                    //停止信号
+ 396   1              return REG_data;
+ 397   1      }
+ 398          //**************************************
+ 399          //初始化MPU6050
+ 400          //**************************************
+ 401          void InitMPU6050()
+ 402          {
+ 403   1              Single_WriteI2C(PWR_MGMT_1, 0x00);      //解除休眠状态
+ 404   1              Single_WriteI2C(SMPLRT_DIV, 0x07);
+ 405   1              Single_WriteI2C(CONFIG, 0x06);
+ 406   1              Single_WriteI2C(GYRO_CONFIG, 0x18);
+ 407   1              Single_WriteI2C(ACCEL_CONFIG, 0x01);
+ 408   1      }
+ 409          //**************************************
+ 410          //合成数据
+ 411          //**************************************
+ 412          int GetData(uchar REG_Address)
+ 413          {
+ 414   1              char H,L;
+ 415   1              H=Single_ReadI2C(REG_Address);
+ 416   1              L=Single_ReadI2C(REG_Address+1);
+ 417   1              return (H<<8)+L;   //合成数据
+ 418   1      }
+ 419          //**************************************
+ 420          //在1602上显示10位数据
+ 421          //**************************************
+ 422          void Display10BitData(int value,uchar x,uchar y)
+ 423          {
+ 424   1              value/=64;                                                      //转换为10位数据
+ 425   1              lcd_printf(dis, value);                 //转换数据显示
+ 426   1              DisplayListChar(x,y,dis,4);     //启始列，行，显示数组，显示长度
+C51 COMPILER V7.06   薩步进_缁_综__控制                                                    01/16/2016 11:51:00 PAGE 8   
+
+ 427   1      }
+ 428          //**************************************
+ 429          //显示温度
+ 430          //**************************************
+ 431          //void display_temp()
+ 432          //{ 
+ 433          //      Temp_h=Single_ReadI2C(TEMP_OUT_H); //读取温度
+ 434          //      Temp_l=Single_ReadI2C(TEMP_OUT_L); //读取温度
+ 435          //      Temperature=Temp_h<<8|Temp_l;     //合成温度
+ 436          //      Temperature = 35+ ((double) (Temperature + 13200)) / 280; // 计算出温度
+ 437          //      lcd_printf(dis,Temperature);     //转换数据显示
+ 438          //      DisplayListChar(11,1,dis,4);     //启始列，行，显示数组，显示位数
+ 439          //}
+ 440          /*------------------------------------------------
+ 441                           定时器中断子程序
+ 442          ------------------------------------------------*/
+ 443          void Timer0_isr(void) interrupt 1 
+ 444          {
+ 445   1       TH0 = time2/256;             //0xFFB0给定初值，这里使用定时器最大值从0开始计数一直到65535溢出
+ 446   1       TL0 = time2%256;
+ 447   1       maichong=~maichong; //定义大功率步进电机连接端口
+ 448   1       times2=1;
+ 449   1      }
+ 450          /*------------------------------------------------
+ 451                           定时器中断子程序
+ 452          ------------------------------------------------*/
+ 453          void Timer1_isr(void) interrupt 3 using 1
+ 454          {
+ 455   1      // TF1=0;
+ 456   1       TH1=0x00;               //重新赋值
+ 457   1       TL1=0x00;
+ 458   1       times1=1;
+ 459   1      
+ 460   1        }
+ 461          
+ 462          /*------------------------------------------------
+ 463                           定时器中断子程序
+ 464          ------------------------------------------------*/
+ 465          void TIM2(void) interrupt 5 using 2//定时器2中断
+ 466          {
+ 467   1        TF2=0;
+ 468   1      
+ 469   1        }
+ 470          /*
+ 471                      case 0:tun=7;break;
+ 472                      case 1:tun=7;break;
+ 473                      case 2:tun=6;break;
+ 474                          case 3:Coil_A1;break;
+ 475                          case 4:Coil_B1;break;
+ 476                          case 5:Coil_C1;break;
+ 477                          case 6:Coil_D1;break;
+ 478                      case 7:tun=1;break;
+ 479                          case 8:tun=1;break;
+ 480                      default:break;
+ 481          
+ 482                      case 0:tun=10;break;
+ 483                      case 1:tun=10;break;
+ 484                          case 2:Coil_A1;break;
+ 485                      case 3:Coil_AB1;break;
+ 486                          case 4:Coil_B1;break;
+ 487                      case 5:Coil_BC1;break;
+ 488                          case 6:Coil_C1;break;
+C51 COMPILER V7.06   薩步进_缁_综__控制                                                    01/16/2016 11:51:00 PAGE 9   
+
+ 489                      case 7:Coil_CD1;break;
+ 490                          case 8:Coil_D1;break;
+ 491                          case 9:Coil_DA1;break;
+ 492                          case 10:tun=1;break;
+ 493                      case 11:tun=1;break;
+ 494                      default:break;
+ 495          */
+ 496          //*********************************************************
+ 497          //主程序
+ 498          //*********************************************************
+ 499          void main()
+ 500          { 
+ 501   1              delay(500);             //上电延时              
+ 502   1              Coil_OFF
+ 503   1       EA=0;            //总中断关
+ 504   1       ET1=0;           //定时器中断打开
+ 505   1        ET2=0;                     //打开定时器中断
+ 506   1              InitLcd();              //液晶初始化
+ 507   1              InitMPU6050();  //初始化MPU6050
+ 508   1       Init_Timer0();
+ 509   1              Init_Timer1();
+ 510   1      //      TIM2Inital();
+ 511   1      EA=1;
+ 512   1              delay(150); 
+ 513   1              
+ 514   1              while(1)
+ 515   1              {
+ 516   2      if(times1==1)
+ 517   2         {
+ 518   3      //      ET1=0;
+ 519   3                      Display10BitData(GetData(ACCEL_XOUT_H),2,0);    //显示X轴加速度
+ 520   3                      Display10BitData(GetData(ACCEL_YOUT_H),7,0);    //显示Y轴加速度
+ 521   3                      Display10BitData(GetData(ACCEL_ZOUT_H),12,0);   //显示Z轴加速度
+ 522   3                      Display10BitData(GetData(GYRO_XOUT_H),2,1);     //显示X轴角速度
+ 523   3                      Display10BitData(GetData(GYRO_YOUT_H),7,1);     //显示Y轴角速度
+ 524   3                      Display10BitData(GetData(GYRO_ZOUT_H),12,1);    //显示Z轴角速度
+ 525   3      //      ET1=1;
+ 526   3                      times1=0;//             delay(500);
+ 527   3              }
+ 528   2              if(times2==1)
+ 529   2         {
+ 530   3      //ET0=0;
+ 531   3      times2=0;
+ 532   3         Xjiaodu=GetData(ACCEL_XOUT_H);//240;//
+ 533   3      
+ 534   3      if(Xjiaodu<0)
+ 535   3      {
+ 536   4      Xjiaodu=-Xjiaodu;
+ 537   4      tun++;
+ 538   4      dir=1;
+ 539   4      }
+ 540   3      else
+ 541   3      {
+ 542   4      tun--;
+ 543   4      dir=0;
+ 544   4      }
+ 545   3      Xjiaodu=Xjiaodu/64;
+ 546   3      
+ 547   3      if(Xjiaodu==0)
+ 548   3      {
+ 549   4      Xjiaodu=1;
+ 550   4      }
+C51 COMPILER V7.06   薩步进_缁_综__控制                                                    01/16/2016 11:51:00 PAGE 10  
+
+ 551   3      time2=65300+Xjiaodu;//300;//
+ 552   3      if(time2>0xFFB0)
+ 553   3      { 
+ 554   4      time2=0xFFB0;
+ 555   4      }
+ 556   3      
+ 557   3      if(time2<0xFEAC)
+ 558   3      { 
+ 559   4      time2=0xFEAC;
+ 560   4      }
+ 561   3      
+ 562   3      
+ 563   3      //RCAP2H  = //(65536-time2)/256;//晶振12M 60ms 16bit 自动重载 TH1 TL1
+ 564   3      //RCAP2L  = //(65536-time2)%256;//
+ 565   3       // Display(0,8);
+ 566   3      
+ 567   3      
+ 568   3      /*switch(tun)
+ 569   3             {
+ 570   3                  case 0:tun=10;break;
+ 571   3                  case 1:tun=10;break;
+ 572   3                      case 2:Coil_A1;break;
+ 573   3                  case 3:Coil_AB1;break;
+ 574   3                      case 4:Coil_B1;break;
+ 575   3                  case 5:Coil_BC1;break;
+ 576   3                      case 6:Coil_C1;break;
+ 577   3                  case 7:Coil_CD1;break;
+ 578   3                      case 8:Coil_D1;break;
+ 579   3                      case 9:Coil_DA1;break;
+ 580   3                      case 10:tun=1;break;
+ 581   3                  case 11:tun=1;break;
+ 582   3                  default:break;
+ 583   3                 } */  
+ 584   3      
+ 585   3      
+ 586   3         }
+ 587   2      
+ 588   2      }
+ 589   1      
+ 590   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1139    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     20      15
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,23 @@
+<html>
+<body>
+<pre>
+<h1>礦ision2 Build Log</h1>
+<h2>Project:</h2>
+E:\专业项目\平衡车项目\87-双步进电机综合控制-4\双步进电机综合控制.uv2
+Project File Date:  04/20/2014
+
+<h2>Output:</h2>
+Build target 'Target 1'
+compiling 双步进电机综合控制.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DELAYMS?薩步进_缁_综__控制
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?INIT_TIMER1?薩步进_缁_综__控制
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?INITLCD?薩步进_缁_综__控制
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DISPLAY10BITDATA?薩步进_缁_综__控制
+Program Size: data=109.1 xdata=0 code=2863
+creating hex file from ".\obj\双步进电机综合控制"...
+".\obj\双步进电机综合控制" - 0 Error(s), 4 Warning(s).

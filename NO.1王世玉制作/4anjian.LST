@@ -1,0 +1,121 @@
+C51 COMPILER V9.01   4ANJIAN                                                               12/02/2013 19:32:11 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE 4ANJIAN
+OBJECT MODULE PLACED IN 4anjian.OBJ
+COMPILER INVOKED BY: D:\软件\keil\C51\BIN\C51.EXE 4anjian.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #include"4anjian.h"
+   3          #include"laba.h"
+   4          ///////按键外加按键音//////定义端口在laba.h
+   5          
+   6          //中断调用按键扫描程序，4个独立按键，按键函数分为短按长按，具有返回值。
+   7          //本程序短按一个返回值，长按一个返回值。
+   8          //移植使用时请根据自身情况
+   9          unsigned char KeyScan(void)                                                                                
+  10          {
+  11   1      
+  12   1      if(UP==0)
+  13   1       {       
+  14   2        up++; 
+  15   2       if(up==3)   
+  16   2          an1=1;
+  17   2       if(up==10)
+  18   2         {
+  19   3         an1=0;  
+  20   3         up=4;
+  21   3         return 11;
+  22   3         }            
+  23   2       } 
+  24   1       else
+  25   1        {
+  26   2        up=0;
+  27   2        if(an1==1)
+  28   2          {
+  29   3              an1=0;
+  30   3              return 1;
+  31   3              } 
+  32   2        }
+  33   1        
+  34   1        
+  35   1      if(DOWN==0)
+  36   1       {
+  37   2       dow++; 
+  38   2       if(dow==3)     
+  39   2              an2=1;
+  40   2       if(dow==10)
+  41   2         {
+  42   3          an2=0;
+  43   3          dow=4;
+  44   3              return 22;
+  45   3         }    
+  46   2       }
+  47   1      else
+  48   1        dow=0;
+  49   1        if(an2==1)
+  50   1          {
+  51   2              an2=0;
+  52   2              return 2;
+  53   2              } 
+  54   1         
+  55   1      if(LIFT==0)
+C51 COMPILER V9.01   4ANJIAN                                                               12/02/2013 19:32:11 PAGE 2   
+
+  56   1       {
+  57   2       li++;  
+  58   2       if(li==3)
+  59   2              an3=1;    
+  60   2         if(li==10)
+  61   2          {
+  62   3              an3=0;
+  63   3              li=4;
+  64   3              return 33;
+  65   3              }       
+  66   2       }
+  67   1      else
+  68   1         li=0;
+  69   1         if(an3==1)
+  70   1          {
+  71   2              an3=0;
+  72   2              return 3;
+  73   2              } 
+  74   1      
+  75   1      
+  76   1      if(RIGHT==0)
+  77   1       {
+  78   2        ri++;  
+  79   2        if(ri==3)  
+  80   2              an4=1;
+  81   2        if(ri==10)
+  82   2          {
+  83   3              an4=0;
+  84   3          ri=4;
+  85   3              return 44;
+  86   3              }       
+  87   2       }
+  88   1      else
+  89   1        ri=0;
+  90   1        if(an4==1)
+  91   1          {
+  92   2              an4=0;
+  93   2              return 4;
+  94   2              }    
+  95   1      }
+*** WARNING C291 IN LINE 95 OF 4ANJIAN.C: not every exit path returns a value
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    144    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      4    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      4    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

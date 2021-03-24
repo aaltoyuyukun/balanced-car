@@ -1,0 +1,89 @@
+<html>
+<body>
+<pre>
+<h1>礦ision2 Build Log</h1>
+<h2>Project:</h2>
+E:\LY-51S 单片机 开发板配套资料\z-axi\87-双步进电机综合控制-3\双步进电机综合控制.uv2
+Project File Date:  01/19/2014
+
+<h2>Output:</h2>
+Build target 'Target 1'
+compiling 双步进电机综合控制.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DELAYMS?薩步进_缁_综__控制
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?TIM2INITAL?薩步进_缁_综__控制
+Program Size: data=42.1 xdata=0 code=1938
+creating hex file from ".\obj\双步进电机综合控制"...
+".\obj\双步进电机综合控制" - 0 Error(s), 2 Warning(s).
+Build target 'Target 1'
+compiling 双步进电机综合控制.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DELAYMS?薩步进_缁_综__控制
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?TIM2INITAL?薩步进_缁_综__控制
+Program Size: data=46.1 xdata=0 code=2019
+creating hex file from ".\obj\双步进电机综合控制"...
+".\obj\双步进电机综合控制" - 0 Error(s), 2 Warning(s).
+Build target 'Target 1'
+compiling 双步进电机综合控制.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DELAYMS?薩步进_缁_综__控制
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?TIM2INITAL?薩步进_缁_综__控制
+Program Size: data=46.1 xdata=0 code=2019
+creating hex file from ".\obj\双步进电机综合控制"...
+".\obj\双步进电机综合控制" - 0 Error(s), 2 Warning(s).
+Build target 'Target 1'
+compiling 双步进电机综合控制.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DELAYMS?薩步进_缁_综__控制
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?TIM2INITAL?薩步进_缁_综__控制
+Program Size: data=46.1 xdata=0 code=2079
+creating hex file from ".\obj\双步进电机综合控制"...
+".\obj\双步进电机综合控制" - 0 Error(s), 2 Warning(s).
+Build target 'Target 1'
+compiling 双步进电机综合控制.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DELAYMS?薩步进_缁_综__控制
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?TIM2INITAL?薩步进_缁_综__控制
+Program Size: data=46.1 xdata=0 code=1762
+creating hex file from ".\obj\双步进电机综合控制"...
+".\obj\双步进电机综合控制" - 0 Error(s), 2 Warning(s).
+Build target 'Target 1'
+compiling 双步进电机综合控制.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DELAYMS?薩步进_缁_综__控制
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?TIM2INITAL?薩步进_缁_综__控制
+Program Size: data=46.1 xdata=0 code=2006
+creating hex file from ".\obj\双步进电机综合控制"...
+".\obj\双步进电机综合控制" - 0 Error(s), 2 Warning(s).
+Build target 'Target 1'
+compiling 双步进电机综合控制.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DELAYMS?薩步进_缁_综__控制
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?TIM2INITAL?薩步进_缁_综__控制
+Program Size: data=46.1 xdata=0 code=2006
+creating hex file from ".\obj\双步进电机综合控制"...
+".\obj\双步进电机综合控制" - 0 Error(s), 2 Warning(s).
+Build target 'Target 1'
+compiling 双步进电机综合控制.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DELAYMS?薩步进_缁_综__控制
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?TIM2INITAL?薩步进_缁_综__控制
+Program Size: data=46.1 xdata=0 code=2027
+creating hex file from ".\obj\双步进电机综合控制"...
+".\obj\双步进电机综合控制" - 0 Error(s), 2 Warning(s).
